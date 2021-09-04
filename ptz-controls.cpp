@@ -522,17 +522,8 @@ void PTZControls::on_targetButton_program_clicked(bool checked)
 		OBSFrontendEvent(OBS_FRONTEND_EVENT_SCENE_CHANGED);
 }
 
-void PTZControls::currentChanged(QModelIndex current, QModelIndex previous)
+void PTZControls::setAutofocusEnabled(bool autofocus_on)
 {
-	Q_UNUSED(previous);
-	full_stop();
-	current_cam = current.row();
-	PTZDevice *ptz = PTZDevice::get_device(current_cam);
-	ui->presetListView->setModel(ptz->presetModel());
-
-	auto settings = ptz->get_settings();
-	bool autofocus_on = obs_data_get_bool(settings, "focus_af_enabled");
-
 	ui->focusButton_auto->setChecked(autofocus_on);
 	ui->focusButton_near->setFlat(autofocus_on);
 	ui->focusButton_near->setEnabled(!autofocus_on);
@@ -540,6 +531,30 @@ void PTZControls::currentChanged(QModelIndex current, QModelIndex previous)
 	ui->focusButton_far->setEnabled(!autofocus_on);
 	ui->focusButton_onetouch->setFlat(autofocus_on);
 	ui->focusButton_onetouch->setEnabled(!autofocus_on);
+}
+
+void PTZControls::currentChanged(QModelIndex current, QModelIndex previous)
+{
+	Q_UNUSED(previous);
+	full_stop();
+
+	PTZDevice *ptz = PTZDevice::get_device(current_cam);
+	if (ptz)
+		disconnect(ptz, nullptr, this, nullptr);
+
+	current_cam = current.row();
+	ptz = PTZDevice::get_device(current_cam);
+	ui->presetListView->setModel(ptz->presetModel());
+	ptz->connect(ptz, SIGNAL(settingsChanged()), this, SLOT(settingsChanged()));
+
+	auto settings = ptz->get_settings();
+	setAutofocusEnabled(obs_data_get_bool(settings, "focus_af_enabled"));
+}
+
+void PTZControls::settingsChanged(OBSData settings)
+{
+	if (obs_data_has_user_value(settings, "focus_af_enabled"))
+		setAutofocusEnabled(obs_data_get_bool(settings, "focus_af_enabled"));
 }
 
 void PTZControls::on_presetListView_activated(QModelIndex index)

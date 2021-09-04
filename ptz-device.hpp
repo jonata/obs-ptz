@@ -48,6 +48,9 @@ protected:
 	obs_properties_t *props;
 	OBSData settings;
 
+signals:
+	void settingsChanged(OBSData settings);
+
 public:
 	PTZDevice(std::string type) : QObject(), type(type)
 	{

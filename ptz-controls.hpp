@@ -39,6 +39,7 @@ private:
 	void setPanTilt(double pan, double tilt);
 
 	void setCurrent(unsigned int index);
+	void setAutofocusEnabled(bool autofocus_on);
 
 	PTZDevice * currCamera();
 
@@ -85,6 +86,7 @@ private slots:
 	void on_targetButton_program_clicked(bool checked);
 
 	void currentChanged(QModelIndex current, QModelIndex previous);
+	void settingsChanged(OBSData settings);
 
 	void on_presetListView_activated(QModelIndex index);
 	void on_presetListView_customContextMenuRequested(const QPoint &pos);

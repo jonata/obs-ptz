@@ -5,6 +5,7 @@
  * SPDX-License-Identifier: GPLv2
  */
 
+#include "imported/qt-wrappers.hpp"
 #include <QNetworkDatagram>
 #include <QSerialPortInfo>
 #include "ptz-visca.hpp"
@@ -960,5 +961,60 @@ obs_properties_t *PTZViscaOverIP::get_obs_properties()
 	obs_property_set_description(p, "VISCA-over-IP Connection");
 	obs_properties_add_text(config, "address", "IP Address", OBS_TEXT_DEFAULT);
 	obs_properties_add_int(config, "port", "UDP port", 1, 65535, 1);
+	return props;
+}
+
+PTZViscaOverTCP::PTZViscaOverTCP(OBSData config)
+	: PTZVisca("visca-over-tcp")
+{
+	address = 1;
+	set_config(config);
+	auto_settings_filter += {"port", "host"};
+	connect(&visca_socket, &QTcpSocket::readyRead, this, &PTZViscaOverTCP::poll);
+}
+
+void PTZViscaOverTCP::reset()
+{
+	send(VISCA_Clear);
+	cmd_get_camera_info();
+}
+
+void PTZViscaOverTCP::send_immediate(QByteArray &msg)
+{
+	visca_socket.write(msg);
+}
+
+void PTZViscaOverTCP::poll()
+{
+	receive(visca_socket.readAll());
+}
+
+void PTZViscaOverTCP::set_config(OBSData config)
+{
+	PTZDevice::set_config(config);
+	const char *host = obs_data_get_string(config, "host");
+	int port = obs_data_get_int(config, "port");
+	if (!port)
+		port = 52381;
+
+	visca_socket.connectToHost(host, port);
+}
+
+OBSData PTZViscaOverTCP::get_config()
+{
+	OBSData config = PTZDevice::get_config();
+	obs_data_set_string(config, "host", QT_TO_UTF8(visca_socket.peerName()));
+	obs_data_set_int(config, "port", visca_socket.peerPort());
+	return config;
+}
+
+obs_properties_t *PTZViscaOverTCP::get_obs_properties()
+{
+	obs_properties_t *props = PTZDevice::get_obs_properties();
+	obs_property_t *p = obs_properties_get(props, "interface");
+	obs_properties_t *config = obs_property_group_content(p);
+	obs_property_set_description(p, "VISCA-over-IP Connection");
+	obs_properties_add_text(config, "host", "IP Host", OBS_TEXT_DEFAULT);
+	obs_properties_add_int(config, "port", "TCP port", 1, 65535, 1);
 	return props;
 }

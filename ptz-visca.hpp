@@ -9,6 +9,7 @@
 #include <QObject>
 #include <QTimer>
 #include <QUdpSocket>
+#include <QTcpSocket>
 #include "protocol-helpers.hpp"
 #include "ptz-device.hpp"
 #include "protocol-helpers.hpp"
@@ -151,6 +152,25 @@ protected:
 public:
 	PTZViscaOverIP(OBSData config);
 	~PTZViscaOverIP();
+
+	void set_config(OBSData ptz_data);
+	OBSData get_config();
+	obs_properties_t *get_obs_properties();
+};
+
+class PTZViscaOverTCP : public PTZVisca {
+	Q_OBJECT
+
+private:
+	QTcpSocket visca_socket;
+
+protected:
+	void send_immediate(QByteArray &msg);
+	void reset();
+	void poll();
+
+public:
+	PTZViscaOverTCP(OBSData config);
 
 	void set_config(OBSData ptz_data);
 	OBSData get_config();

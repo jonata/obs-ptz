@@ -13,6 +13,7 @@
 
 #include "ptz-device.hpp"
 #include "ui_ptz-controls.h"
+#include "ptz-action-source.h"
 
 #define STRINGIFY(x) #x
 #define TOSTRING(x) STRINGIFY(x)

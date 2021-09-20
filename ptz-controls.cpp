@@ -21,6 +21,7 @@
 #include "settings.hpp"
 #include "ptz-visca.hpp"
 #include "ptz-pelco-p.hpp"
+#include "ptz-action-source.h"
 
 OBS_DECLARE_MODULE()
 OBS_MODULE_AUTHOR("Grant Likely <grant.likely@secretlab.ca>");
@@ -36,6 +37,7 @@ bool obs_module_load()
 	obs_frontend_add_dock(tmp);
 	obs_frontend_pop_ui_translation();
 	ptz_init_settings();
+	ptz_action_source_load();
 	return true;
 }
 
@@ -239,12 +241,8 @@ void PTZControls::SaveConfig()
 		target_mode = "program";
 	obs_data_set_string(data, "target_mode", target_mode);
 
-	OBSDataArray camera_array = obs_data_array_create();
+	OBSDataArray camera_array = ptz_devices_get_config();
 	obs_data_array_release(camera_array);
-	for (unsigned long int i = 0; i < PTZDevice::device_count(); i++) {
-		PTZDevice *ptz = PTZDevice::get_device(i);
-		obs_data_array_push_back(camera_array, ptz->get_config());
-	}
 	obs_data_set_array(data, "devices", camera_array);
 
 	/* Save data structure to json */

@@ -10,6 +10,7 @@
 #include "ptz-device.hpp"
 #include "ptz-visca.hpp"
 #include "ptz-pelco-p.hpp"
+#include "ptz-action-source.h"
 
 int ptz_debug_level = LOG_INFO;
 
@@ -159,4 +160,23 @@ obs_properties_t *PTZDevice::get_obs_properties()
 	}
 
 	return props;
+}
+
+/* C interface for non-QT parts of the plugin */
+obs_data_array_t *ptz_devices_get_config()
+{
+	obs_data_array_t *camera_array = obs_data_array_create();
+	for (unsigned long int i = 0; i < PTZDevice::device_count(); i++) {
+		PTZDevice *ptz = PTZDevice::get_device(i);
+		obs_data_array_push_back(camera_array, ptz->get_config());
+	}
+	return camera_array;
+}
+
+void ptz_preset_recall(unsigned int camera, unsigned int preset)
+{
+	if (camera >= PTZDevice::device_count())
+		return;
+	PTZDevice* ptz = PTZDevice::get_device(camera);
+	ptz->memory_recall(preset);
 }

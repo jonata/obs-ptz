@@ -37,6 +37,7 @@ set(ptz-controls_HEADERS
     ptz-controls.hpp
     ptz-device.hpp
     settings.hpp
+    ptz-action-source.h
     protocol-helpers.hpp
     imported/qt-wrappers.hpp
     imported/properties-view.hpp
@@ -53,6 +54,7 @@ set(ptz-controls_SOURCES
     ptz-controls.cpp
     ptz-device.cpp
     settings.cpp
+    ptz-action-source.c
     protocol-helpers.cpp
     imported/qt-wrappers.cpp
     imported/properties-view.cpp

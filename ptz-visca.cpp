@@ -471,6 +471,26 @@ PTZVisca::PTZVisca(std::string type)
 	connect(&timeout_timer, &QTimer::timeout, this, &PTZVisca::timeout);
 }
 
+obs_properties_t *PTZVisca::get_obs_properties()
+{
+	auto *props = PTZDevice::get_obs_properties();
+
+	auto *wbGroup = obs_properties_create();
+	obs_properties_add_group(props, "whitebalance", "White Balance", OBS_GROUP_NORMAL, wbGroup);
+
+	auto *list = obs_properties_add_list(wbGroup, "whitebalance-mode", "Mode",
+					OBS_COMBO_TYPE_LIST, OBS_COMBO_FORMAT_INT);
+	obs_property_list_add_int(list, "Auto", 0);
+	obs_property_list_add_int(list, "Indoor", 1);
+	obs_property_list_add_int(list, "Outdoor", 2);
+	obs_property_list_add_int(list, "One Push", 3);
+	obs_property_list_add_int(list, "Auto Tracing", 4);
+	obs_property_list_add_int(list, "Manual", 5);
+
+	auto *button = obs_properties_add_button(wbGroup, "one-push", "One Push Whitebalance", NULL);
+	return props;
+}
+
 void PTZVisca::send(PTZCmd cmd)
 {
 	if (cmd.cmd[1] == (char)0x01) { // command packets get sent immediately
@@ -806,7 +826,7 @@ OBSData PTZViscaSerial::get_config()
 
 obs_properties_t *PTZViscaSerial::get_obs_properties()
 {
-	obs_properties_t *props = PTZDevice::get_obs_properties();
+	obs_properties_t *props = PTZVisca::get_obs_properties();
 	obs_property_t *p = obs_properties_get(props, "interface");
 	obs_properties_t *config = obs_property_group_content(p);
 	obs_property_set_description(p, "VISCA Connection");
@@ -955,7 +975,7 @@ OBSData PTZViscaOverIP::get_config()
 
 obs_properties_t *PTZViscaOverIP::get_obs_properties()
 {
-	obs_properties_t *props = PTZDevice::get_obs_properties();
+	obs_properties_t *props = PTZVisca::get_obs_properties();
 	obs_property_t *p = obs_properties_get(props, "interface");
 	obs_properties_t *config = obs_property_group_content(p);
 	obs_property_set_description(p, "VISCA-over-IP Connection");
@@ -1010,7 +1030,7 @@ OBSData PTZViscaOverTCP::get_config()
 
 obs_properties_t *PTZViscaOverTCP::get_obs_properties()
 {
-	obs_properties_t *props = PTZDevice::get_obs_properties();
+	obs_properties_t *props = PTZVisca::get_obs_properties();
 	obs_property_t *p = obs_properties_get(props, "interface");
 	obs_properties_t *config = obs_property_group_content(p);
 	obs_property_set_description(p, "VISCA-over-IP Connection");
